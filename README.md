@@ -4,18 +4,21 @@ Este projeto é uma automação em Python (RPA) desenvolvida para um teste técn
 
 ## Arquitetura do Projeto 
 
-O projeto foi modularizado visando a separação de responsabilidades e facilidade de manutenção:
-* `extrator_web.py`: Responsável por acessar a página web e extrair a tabela HTML.
-* `processador_dados.py`: Responsável por limpar os dados e aplicar as regras de negócio usando Pandas.
-* `consumidor_api.py`: Responsável por consultar a REST Countries API e tratar exceções.
-* `main.py`: O orquestrador que conecta todas as etapas e exporta o arquivo `.xlsx` final.
+O projeto foi modularizado visando a separação de responsabilidades, segurança e resiliência:
+* `extrator_web.py`: Navegação web (Playwright) e extração de tabelas HTML (Pandas).
+* `processador_dados.py`: Limpeza de dados (Data Cleansing) e regras de negócio.
+* `consumidor_api.py`: Integração com a REST Countries API e tratamento de exceções.
+* `enviar_webhook.py`: Envio do arquivo gerado para o webhook via POST com Basic Auth, utilizando variáveis de ambiente para omitir credenciais do código-fonte.
+* `main.py`: O orquestrador central com sistema de **Logging** implementado para rastreabilidade de ponta a ponta.
 
 ## Tecnologias Utilizadas
 
 * **Python 3.x**
-* **Playwright:** Para web scraping confiável e contorno de bloqueios dinâmicos.
-* **Pandas:** Para manipulação de DataFrames e consolidação de dados.
-* **Requests:** Para consumo da API REST.
+* **Playwright:** Web scraping robusto.
+* **Pandas:** Manipulação de DataFrames e exportação para `.xlsx`.
+* **Requests:** Consumo de APIs REST e envio de Webhooks.
+* **python-dotenv:** Gerenciamento seguro de credenciais via variáveis de ambiente.
+* **Logging (Nativo):** Auditoria e geração de logs de execução (`execucao_robo.log`).
 
 ## Como executar o projeto
 
@@ -32,9 +35,13 @@ pip install -r requirements.txt
 
 playwright install
 
-4. Execute o orquestrador:
+4. Configuração de Ambiente (Importante):
+
+Crie um arquivo chamado .env na raiz do projeto e adicione as credenciais solicitadas no arquivo `enviar_webhook.py`.
+
+5. Execute o orquestrador:
 
 python main.py
 
-O robô iniciará o processo e, ao final, gerará um arquivo chamado Teste RPA - Farley Pinheiro dos Santos.xlsx na mesma pasta.
+O robô gerará o arquivo Excel, fará o envio automático para o webhook e criará um arquivo execucao_robo.log com o detalhamento de cada etapa.
 

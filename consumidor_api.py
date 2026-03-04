@@ -1,11 +1,22 @@
 import requests
+import logging
 
 def buscar_dados_api(nome_pais: str) -> dict:
     """
-    Consome a API para buscar Capital, Linguagens e Moedas.
+    Consome a API REST Countries para buscar informações adicionais de um país.
+
+    Realiza o tratamento prévio do nome do país (substituindo '&' por 'and' e removendo
+    textos entre parênteses) para garantir a compatibilidade com os endpoints da API.
+
+    Args:
+        nome_pais (str): O nome do país em inglês, conforme extraído da base de dados.
+
+    Returns:
+        dict: Um dicionário contendo as chaves 'Capital', 'Linguagens' e 'Moedas'.
+              Em caso de falha na requisição, retorna os mesmos campos preenchidos com 'N/A'.
     """
-    nome_pais = nome_pais.replace(' & ', ' and ')
-    nome_busca = nome_pais.split(' (')[0]
+    nome_pais_tratado = nome_pais.replace(' & ', ' and ')
+    nome_busca = nome_pais_tratado.split(' (')[0]
     url = f"https://restcountries.com/v3.1/name/{nome_busca}"
     
     try:
@@ -29,5 +40,5 @@ def buscar_dados_api(nome_pais: str) -> dict:
         }
         
     except Exception as e:
-        print(f'Erro ao buscar dados para {nome_pais}: {e}')
+        logging.error(f"Erro ao buscar dados na API para '{nome_pais}': {e}")
         return {'Capital': 'N/A', 'Linguagens': 'N/A', 'Moedas': 'N/A'}
