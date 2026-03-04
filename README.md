@@ -5,10 +5,10 @@ Este projeto é uma automação em Python (RPA) desenvolvida para um teste técn
 ## Arquitetura do Projeto 
 
 O projeto foi modularizado visando a separação de responsabilidades, segurança e resiliência:
-* `extrator_web.py`: Navegação web (Playwright) e extração de tabelas HTML (Pandas).
-* `processador_dados.py`: Limpeza de dados (Data Cleansing) e regras de negócio.
-* `consumidor_api.py`: Integração com a REST Countries API e tratamento de exceções.
-* `enviar_webhook.py`: Envio do arquivo gerado para o webhook via POST com Basic Auth, utilizando variáveis de ambiente para omitir credenciais do código-fonte.
+* `src/web_scraper.py`: Navegação web (Playwright) e extração de tabelas HTML (Pandas).
+* `src/data_processor.py`: Limpeza de dados (Data Cleansing) e regras de negócio.
+* `src/api_client.py`: Integração com a REST Countries API e tratamento de exceções.
+* `src/webhook_sender.py`: Envio do arquivo gerado para o webhook via POST com Basic Auth, utilizando variáveis de ambiente para omitir credenciais do código-fonte.
 * `main.py`: O orquestrador central com sistema de **Logging** implementado para rastreabilidade de ponta a ponta.
 
 ## Tecnologias Utilizadas
