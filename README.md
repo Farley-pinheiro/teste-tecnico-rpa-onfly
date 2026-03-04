@@ -19,9 +19,10 @@ O projeto foi modularizado visando a separação de responsabilidades e facilida
 
 ## Como executar o projeto
 
-1. Clone este repositório:
 ```bash
-git clone <URL_DO_SEU_REPOSITORIO>
+1. Clone este repositório:
+
+git clone https://github.com/Farley-pinheiro/teste-tecnico-rpa-onfly
 
 2. Instale as dependências do projeto:
 
