@@ -37,7 +37,7 @@ playwright install
 
 4. Configuração de Ambiente (Importante):
 
-Crie um arquivo chamado .env na raiz do projeto e adicione as credenciais solicitadas no arquivo `enviar_webhook.py`.
+Crie um arquivo chamado .env na raiz do projeto e adicione as credenciais solicitadas no arquivo `webhook_sender.py`.
 
 5. Execute o orquestrador:
 

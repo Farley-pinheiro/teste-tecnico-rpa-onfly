@@ -1,37 +1,47 @@
-import os
-import requests
 import logging
-from dotenv import load_dotenv
+import requests
+import time
 
-load_dotenv() 
+from src.config import Settings
 
-def send_file_to_webhook(file_path: str) -> None:
+logger = logging.getLogger(__name__)
+
+_MAX_RETRIES = 3
+_RETRY_BACKOFF = 3.0  # segundos
+
+def send_file_to_webhook(file_path: str, settings: Settings) -> None:
     """
     Envia um arquivo local para o webhook via requisição HTTP POST.
+    Inclui lógica simplificada de Retry/Backoff e utiliza Injeção de Dependência (Settings).
     """
-    try:
-        webhook_url = os.getenv("WEBHOOK_URL")
-        username = os.getenv("WEBHOOK_USER")
-        password = os.getenv("WEBHOOK_PASS")
-        
-        if not webhook_url or not username or not password:
-            raise ValueError("Variáveis WEBHOOK_URL, WEBHOOK_USER ou WEBHOOK_PASS ausentes no .env")
-        
-        logging.info(f"Preparando envio seguro do arquivo '{file_path}'...")
-        
-        with open(file_path, 'rb') as file:
-            file_payload = {'file': file}
+    logger.info("Preparando envio seguro do arquivo '%s'...", file_path)
+    
+    for attempt in range(1, _MAX_RETRIES + 1):
+        try:
+            with open(file_path, 'rb') as file:
+                file_payload = {'file': file}
+                
+                response = requests.post(
+                    settings.webhook_url, 
+                    auth=(settings.webhook_user, settings.webhook_pass), 
+                    files=file_payload,
+                    timeout=30
+                )
+                
+            response.raise_for_status()
+            logger.info("Arquivo enviado com SUCESSO! Status Code: %d", response.status_code)
+            return
             
-            response = requests.post(
-                webhook_url, 
-                auth=(username, password), 
-                files=file_payload,
-                timeout=30
-            )
-            
-        response.raise_for_status()
-        logging.info(f"Arquivo enviado com SUCESSO! Status Code: {response.status_code}")
-        
-    except Exception as e:
-        logging.error(f"Falha ao realizar POST no webhook: {e}")
-        raise
+        except requests.RequestException as exc:
+            if attempt < _MAX_RETRIES:
+                sleep_time = _RETRY_BACKOFF * attempt
+                logger.warning("Tentativa %d/%d de envio falhou. Tentando novamente em %ds... (Erro: %s)", 
+                               attempt, _MAX_RETRIES, sleep_time, exc)
+                time.sleep(sleep_time)
+            else:
+                logger.error("Falha definitiva ao realizar POST no webhook após %d tentativas.", _MAX_RETRIES)
+                raise
+                
+        except Exception as exc:
+            logger.error("Erro inesperado no envio do webhook: %s", exc)
+            raise

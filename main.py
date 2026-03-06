@@ -7,14 +7,15 @@ import pandas as pd
 import logging
 import sys
 
+from src.config import Settings
 from src.web_scraper import extract_table_data
 from src.data_processor import process_and_filter_data
-from src.api_client import fetch_api_data
+from src.api_client import fetch_all_countries
 from src.webhook_sender import send_file_to_webhook
 
 logging.basicConfig(
     level=logging.INFO,
-    format='%(asctime)s - %(levelname)s - %(message)s',
+    format='%(asctime)s - %(levelname)s - [%(filename)s] - %(message)s',
     handlers=[
         logging.FileHandler("execucao_robo.log", encoding='utf-8'),
         logging.StreamHandler(sys.stdout)
@@ -23,6 +24,10 @@ logging.basicConfig(
 
 def main() -> None:
     """Função principal que orquestra o fluxo do robô."""
+    
+    settings = Settings()
+    settings.validate()
+    
     logging.info("--- Iniciando automação de coleta de dados (Worldometers) ---")
     
     try:
@@ -36,13 +41,8 @@ def main() -> None:
         logging.info(f"Top 10 processado com sucesso! {len(top_10_df)} países encontrados.")
         
         logging.info("Etapa 3: Buscando informações adicionais na API (REST Countries)...")
-        additional_data = []
-        
-        for _, row in top_10_df.iterrows():
-            country = row['País']
-            logging.info(f"   -> Consultando dados para: {country}...")
-            api_info = fetch_api_data(country)
-            additional_data.append(api_info)
+        countries_list = top_10_df['País'].tolist()
+        additional_data = fetch_all_countries(countries_list, settings)
             
         logging.info("Etapa 4: Consolidando os dados em um arquivo Excel...")
         api_df = pd.DataFrame(additional_data)
@@ -50,15 +50,16 @@ def main() -> None:
         
         output_filename = "Teste RPA - Farley Pinheiro dos Santos.xlsx"
         final_df.to_excel(output_filename, index=False)
-        logging.info(f"Arquivo '{output_filename}' gerado com sucesso.")
+        logging.info("Arquivo '%s' gerado com sucesso.", output_filename)
         
         logging.info("Etapa 5: Enviando arquivo para o webhook...")
-        send_file_to_webhook(output_filename)
+        
+        send_file_to_webhook(output_filename, settings)
         
         logging.info("--- Automação finalizada com SUCESSO! ---")
 
     except Exception as e:
-        logging.critical(f"ERRO FATAL: A automação falhou e foi interrompida. Detalhes: {e}", exc_info=True)
+        logging.critical("ERRO FATAL: A automação falhou e foi interrompida. Detalhes: %s", e, exc_info=True)
 
 if __name__ == "__main__":
     main()
