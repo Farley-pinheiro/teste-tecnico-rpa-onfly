@@ -1,5 +1,9 @@
+"""Módulo responsável pelo tratamento e limpeza de dados populacionais."""
+
 import pandas as pd
 import logging
+
+logger = logging.getLogger(__name__)
 
 def process_and_filter_data(raw_df: pd.DataFrame) -> pd.DataFrame:
     """
@@ -10,8 +14,11 @@ def process_and_filter_data(raw_df: pd.DataFrame) -> pd.DataFrame:
 
     Returns:
         pd.DataFrame: DataFrame contendo apenas os 10 países com a maior média de idade.
+
+    Raises:
+        Exception: Falha caso os dados brutos não contenham as colunas esperadas.
     """
-    logging.info("Iniciando o tratamento e limpeza dos dados brutos...")
+    logger.info("Iniciando o tratamento e limpeza dos dados brutos...")
     
     try:
         target_columns = {
@@ -30,11 +37,11 @@ def process_and_filter_data(raw_df: pd.DataFrame) -> pd.DataFrame:
         rows_after = len(cleaned_df)
         
         if rows_before != rows_after:
-            logging.info(f"Removidas {rows_before - rows_after} linhas com média de idade inválida/nula.")
+            logger.info("Removidas %d linhas com média de idade inválida/nula.", (rows_before - rows_after))
         
         top_10_df = cleaned_df.nlargest(10, 'Média idade')
         return top_10_df
         
-    except Exception as e:
-        logging.error(f"Falha no processamento (Data Cleansing) dos dados: {e}")
+    except Exception as exc:
+        logger.error("Falha no processamento (Data Cleansing) dos dados: %s", exc)
         raise

@@ -1,3 +1,5 @@
+"""Módulo para consumo da API pública REST Countries com suporte a sessões persistentes."""
+
 import logging
 import time
 import requests
@@ -13,7 +15,15 @@ _MAX_RETRIES = 3
 _RETRY_BACKOFF = 2.0  # segundos
 
 def _normalize_name(name: str) -> str:
-    """Normaliza o nome do país para a API."""
+    """
+    Normaliza o nome do país removendo caracteres indesejados para a API.
+
+    Args:
+        name (str): Nome original do país.
+
+    Returns:
+        str: Nome do país tratado e pronto para uso em URLs.
+    """
     return name.replace(" & ", " and ").split(" (")[0].strip()
 
 def fetch_api_data(
@@ -22,8 +32,16 @@ def fetch_api_data(
     session: Optional[Session] = None,
 ) -> dict:
     """
-    Consulta a REST Countries API para um país.
-    Reutiliza sessão HTTP se fornecida (recomendado para chamadas em lote).
+    Consulta a REST Countries API para um único país.
+
+    Args:
+        country_name (str): Nome do país (em inglês).
+        settings (Settings): Configurações da aplicação.
+        session (Optional[Session]): Sessão HTTP reutilizável. O padrão é None.
+
+    Returns:
+        dict: Dicionário contendo as chaves 'Capital', 'Linguagens' e 'Moedas'. 
+              Retorna valores 'N/A' em caso de falha não-recuperável.
     """
     http = session or requests
     normalized = _normalize_name(country_name)
@@ -60,7 +78,16 @@ def fetch_api_data(
     return _FALLBACK.copy()
 
 def fetch_all_countries(countries: list[str], settings: Settings) -> list[dict]:
-    """Busca dados para uma lista de países reutilizando a mesma sessão HTTP."""
+    """
+    Busca dados para uma lista de países reutilizando a mesma sessão HTTP.
+
+    Args:
+        countries (list[str]): Lista contendo os nomes dos países.
+        settings (Settings): Instância contendo as configurações de timeout e URLs.
+
+    Returns:
+        list[dict]: Lista de dicionários enriquecidos contendo os dados de cada país.
+    """
     logger.info("Iniciando busca em lote de %d países com Session Pooling...", len(countries))
     with requests.Session() as session:
         return [fetch_api_data(c, settings, session) for c in countries]

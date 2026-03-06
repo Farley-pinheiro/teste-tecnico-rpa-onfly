@@ -1,7 +1,12 @@
+"""Módulo responsável pela extração de dados web (Scraping)."""
+
 import pandas as pd
 import logging
+
 from playwright.sync_api import sync_playwright
 from io import StringIO
+
+logger = logging.getLogger(__name__)
 
 def extract_table_data(target_url: str) -> pd.DataFrame:
     """
@@ -11,9 +16,12 @@ def extract_table_data(target_url: str) -> pd.DataFrame:
         target_url (str): A URL da página web que contém a tabela de dados.
 
     Returns:
-        pd.DataFrame: Um DataFrame Pandas contendo os dados brutos da primeira tabela.
+        pd.DataFrame: Um DataFrame Pandas contendo os dados brutos da primeira tabela encontrada.
+
+    Raises:
+        Exception: Falha caso a navegação falhe ou a tabela HTML não seja encontrada.
     """
-    logging.info(f"Iniciando navegação headless para a URL: {target_url}")
+    logger.info("Iniciando navegação headless para a URL: %s", target_url)
     
     try:
         with sync_playwright() as pw:
@@ -23,13 +31,13 @@ def extract_table_data(target_url: str) -> pd.DataFrame:
             
             html_content = page.content()
             browser.close()
-            logging.info("Navegação concluída e HTML extraído com sucesso.")
+            logger.info("Navegação concluída e HTML extraído com sucesso.")
             
         tables = pd.read_html(StringIO(html_content))
         main_df = tables[0]
         
         return main_df
         
-    except Exception as e:
-        logging.error(f"Falha ao extrair dados da web. Detalhes: {e}")
+    except Exception as exc:
+        logger.error("Falha ao extrair dados da web. Detalhes: %s", exc)
         raise

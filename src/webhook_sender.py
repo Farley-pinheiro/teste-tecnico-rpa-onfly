@@ -1,3 +1,5 @@
+"""Módulo responsável pelo envio de dados via webhooks HTTP."""
+
 import logging
 import requests
 import time
@@ -12,7 +14,15 @@ _RETRY_BACKOFF = 3.0  # segundos
 def send_file_to_webhook(file_path: str, settings: Settings) -> None:
     """
     Envia um arquivo local para o webhook via requisição HTTP POST.
-    Inclui lógica simplificada de Retry/Backoff e utiliza Injeção de Dependência (Settings).
+
+    Inclui lógica de Retry/Backoff Exponencial simplificado para lidar com instabilidades na rede.
+
+    Args:
+        file_path (str): O caminho (relativo ou absoluto) do arquivo a ser enviado.
+        settings (Settings): Instância de configurações contendo a URL e credenciais do Webhook.
+
+    Raises:
+        Exception: Erro de rede ou HTTP após todas as tentativas falharem.
     """
     logger.info("Preparando envio seguro do arquivo '%s'...", file_path)
     
