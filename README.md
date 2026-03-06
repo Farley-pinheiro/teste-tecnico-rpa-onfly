@@ -2,7 +2,7 @@
 
 Este projeto é uma automação em Python (RPA) desenvolvida para um teste técnico. O robô realiza web scraping para identificar os países com a maior média de idade e, em seguida, consome uma API pública para enriquecer os dados com informações de capital, idiomas e moedas, enviando o resultado consolidado via webhook HTTP.
 
-## Arquitetura e Padrões de Projeto (Clean Code)
+## Arquitetura e Padrões de Projeto
 
 O projeto foi rigorosamente modularizado visando separação de responsabilidades, segurança, performance e resiliência a falhas de rede:
 
